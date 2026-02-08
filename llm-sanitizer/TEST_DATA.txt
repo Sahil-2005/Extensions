@@ -1,0 +1,57 @@
+Test Data for LLM Sanitizer Extension
+========================================
+
+Copy and paste this content into ChatGPT, Claude, or Gemini to test the extension.
+All sensitive data below should be automatically redacted.
+
+EMAIL TEST:
+My email is john.doe@example.com and my colleague's is jane_smith@company.org
+
+API KEY TESTS:
+OpenAI: sk-1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJ
+AWS Access Key: AKIAIOSFODNN7EXAMPLE
+Google API: AIzaSyDxVxVxVxVxVxVxVxVxVxVxVxVxVxVxVxV
+
+CREDIT CARD TESTS:
+Visa: 4532015112830366
+Mastercard: 5425233430109903
+Amex: 374245455400126
+
+PHONE NUMBER TEST:
+Call me at (555) 123-4567 or +1-555-987-6543
+
+IP ADDRESS TEST:
+Server IP: 192.168.1.100
+Public IP: 8.8.8.8
+
+SSN TEST:
+SSN: 123-45-6789
+
+JWT TOKEN TEST:
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
+GITHUB TOKEN TEST:
+ghp_1234567890abcdefghijklmnopqrstuvwxyz
+
+DATABASE CONNECTION TEST:
+mongodb://username:password@localhost:27017/mydb
+postgresql://user:pass@localhost/database
+
+PRIVATE KEY TEST:
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEA1234567890abcdefghijklmnop
+-----END RSA PRIVATE KEY-----
+
+EXPECTED RESULTS:
+- All emails should show [EMAIL_REDACTED]
+- All API keys should show [OPENAI_KEY_REDACTED], [AWS_KEY_REDACTED], etc.
+- Credit cards should show [CREDIT_CARD_REDACTED]
+- Phone numbers should show [PHONE_REDACTED]
+- IP addresses should show [IP_REDACTED]
+- SSN should show [SSN_REDACTED]
+- JWT should show [JWT_TOKEN_REDACTED]
+- GitHub token should show [GITHUB_TOKEN_REDACTED]
+- Database URLs should show [DB_CONNECTION_REDACTED]
+- Private key should show [PRIVATE_KEY_REDACTED]
+
+A green notification should appear showing which patterns were detected!
