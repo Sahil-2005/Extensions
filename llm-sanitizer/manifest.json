@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "LLM Sanitizer",
+  "version": "1.0",
+  "description": "Auto-redacts sensitive data before you paste it into AI chat tools.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "*://chatgpt.com/*",
+    "*://claude.ai/*",
+    "*://gemini.google.com/*"
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://chatgpt.com/*",
+        "*://claude.ai/*",
+        "*://gemini.google.com/*"
+      ],
+      "js": ["src/patterns.js", "src/content.js"]
+    }
+  ]
+}
