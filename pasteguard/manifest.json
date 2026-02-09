@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "LLM Sanitizer",
+  "name": "PasteGuard",
   "version": "1.0",
-  "description": "Auto-redacts sensitive data before you paste it into AI chat tools.",
+  "description": "Automatically protects your privacy by detecting and redacting sensitive data before you paste it into AI chatbots.",
   "permissions": ["storage"],
   "host_permissions": [
     "*://chatgpt.com/*",

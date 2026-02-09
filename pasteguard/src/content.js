@@ -1,4 +1,4 @@
-console.log("LLM Sanitizer: Active and listening for pastes.");
+console.log("PasteGuard: Active and listening for pastes.");
 
 document.addEventListener("paste", (event) => {
   // 1. Get the text from the clipboard
@@ -62,7 +62,7 @@ document.addEventListener("paste", (event) => {
   if (success) {
     showNotification(`🛡️ Redacted: ${detectedPatterns.join(', ')}`, detectedPatterns.length);
   } else {
-    console.error("LLM Sanitizer: Failed to insert text programmatically.");
+    console.error("PasteGuard: Failed to insert text programmatically.");
     showNotification("⚠️ Redaction detected but insertion failed", 1, true);
   }
 }, true); // Use capturing phase to catch it early
@@ -93,7 +93,7 @@ function showNotification(message, count = 1, isError = false) {
   document.head.appendChild(style);
   
   div.innerHTML = `
-    <div style="font-weight: 600; margin-bottom: 4px;">LLM Sanitizer</div>
+    <div style="font-weight: 600; margin-bottom: 4px;">PasteGuard</div>
     <div style="font-size: 13px; opacity: 0.95;">${message}</div>
   `;
   

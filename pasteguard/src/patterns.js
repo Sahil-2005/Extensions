@@ -14,7 +14,7 @@ const SENSITIVE_PATTERNS = [
   },
   {
     name: "API Key - OpenAI",
-    regex: /\bsk-[a-zA-Z0-9]{48}\b/g,
+    regex: /\bsk-[a-zA-Z0-9]{20,}\b/g,
     replacement: "[OPENAI_KEY_REDACTED]"
   },
   {

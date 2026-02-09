@@ -1,4 +1,4 @@
-Test Data for LLM Sanitizer Extension
+Test Data for PasteGuard Extension
 ========================================
 
 Copy and paste this content into ChatGPT, Claude, or Gemini to test the extension.
