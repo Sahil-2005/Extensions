@@ -17,7 +17,21 @@ A curated collection of Chrome extensions I've developed to enhance productivity
 
 [View Details →](./pasteguard/README.md)
 
+
+### 🔐 [PromptVault](./PromptVault)
+**Status**: 🚧 Initial Setup
+**Purpose**: Manage and instantly inject complex prompts into AI tools like ChatGPT, Claude, and Gemini with a slash command or floating button.
+
+**Key Features**:
+- ⚡ Slash-command autocomplete (`/review`, `/fix`)
+- 📂 Vault Dashboard for prompt management
+- 👆 One-click injection via floating button
+- ☁️ Syncs across devices
+
+[View Details →](./PromptVault/README.md)
+
 ---
+
 
 ## 🚀 Getting Started
 
@@ -48,6 +62,11 @@ Extensions/
 │   ├── README.md
 │   ├── manifest.json
 │   └── src/
+└── src/
+└── PromptVault/
+    ├── README.md
+    ├── manifest.json
+    └── src/
 └── [future-extension]/
     ├── README.md
     └── ...
@@ -73,4 +92,4 @@ Each extension may have its own license. Check individual extension directories 
 ---
 
 **Last Updated**: February 2026  
-**Total Extensions**: 1
+**Total Extensions**: 2
