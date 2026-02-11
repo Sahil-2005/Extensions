@@ -13,15 +13,10 @@
     "https://gemini.google.com/*"
   ],
   "action": {
-    "default_popup": "src/popup/index.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
+    "default_popup": "src/popup/index.html"
   },
   "background": {
-    "service_worker": "src/background/index.ts",
+    "service_worker": "src/background/index.js",
     "type": "module"
   },
   "content_scripts": [
@@ -31,15 +26,10 @@
         "https://claude.ai/*",
         "https://gemini.google.com/*"
       ],
-      "js": ["src/content/index.ts"],
+      "js": ["src/content/index.js"],
       "run_at": "document_end"
     }
   ],
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  },
   "web_accessible_resources": [
     {
       "resources": [
