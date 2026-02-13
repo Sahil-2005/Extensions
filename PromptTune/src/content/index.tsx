@@ -2,7 +2,6 @@
 // we need to import the CSS as a raw string or URL.
 // Vite provides ?inline for raw string.
 
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { getInputContainer, getInputField, getSiteType } from './utils/dom';
 import { TuneButton } from './components/TuneButton';

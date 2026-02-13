@@ -1,0 +1,7 @@
+﻿src/components/ui/Switch.tsx(2,1): error TS6133: 'cn' is declared but its value is never read.
+src/content/index.tsx(5,1): error TS6133: 'React' is declared but its value is never read.
+src/content/utils/dom.ts(36,9): error TS2322: Type 'HTMLElement | null | undefined' is not assignable to type 'HTMLElement | null'.
+  Type 'undefined' is not assignable to type 'HTMLElement | null'.
+src/content/utils/dom.ts(39,9): error TS2322: Type 'HTMLElement | null | undefined' is not assignable to type 'HTMLElement | null'.
+  Type 'undefined' is not assignable to type 'HTMLElement | null'.
+src/popup/App.tsx(1,8): error TS6133: 'React' is declared but its value is never read.

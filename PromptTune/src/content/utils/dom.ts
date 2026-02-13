@@ -29,14 +29,14 @@ export const getInputContainer = (inputField: HTMLElement, site: SiteType): HTML
 
     if (site === 'chatgpt') {
         // ChatGPT: usually the wrapper around the textarea
-        return inputField.parentElement;
+        return inputField.parentElement || null;
     }
     if (site === 'claude') {
         // Claude: The fieldset or the wrapper div
-        return inputField.closest('.fieldset') || inputField.parentElement?.parentElement;
+        return inputField.closest('.fieldset') || inputField.parentElement?.parentElement || null;
     }
     if (site === 'gemini') {
-        return inputField.parentElement?.parentElement;
+        return inputField.parentElement?.parentElement || null;
     }
-    return inputField.parentElement;
+    return inputField.parentElement || null;
 }
