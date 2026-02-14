@@ -30,6 +30,18 @@ A curated collection of Chrome extensions I've developed to enhance productivity
 
 [View Details →](./PromptVault/README.md)
 
+### ✨ [PromptTune](./PromptTune)
+**Status**: ✅ Active Development
+**Purpose**: "Grammarly for Prompts" - One-click prompt optimization directly inside ChatGPT, Claude, and Gemini using Gemini 1.5 Flash.
+
+**Key Features**:
+- ✨ Smart "Tune" button injected into chat inputs
+- 🧠 Powered by Gemini 1.5 Flash
+- ⚡ Instant rewrite for clarity and structure
+- 🎨 Native UI integration (Shadow DOM)
+
+[View Details →](./PromptTune/README.md)
+
 ---
 
 
@@ -62,11 +74,14 @@ Extensions/
 │   ├── README.md
 │   ├── manifest.json
 │   └── src/
-└── src/
-└── PromptVault/
-    ├── README.md
-    ├── manifest.json
-    └── src/
+├── PromptVault/
+│   ├── README.md
+│   ├── manifest.json
+│   └── src/
+├── PromptTune/
+│   ├── README.md
+│   ├── manifest.json
+│   └── src/
 └── [future-extension]/
     ├── README.md
     └── ...
@@ -91,5 +106,5 @@ Each extension may have its own license. Check individual extension directories 
 
 ---
 
-**Last Updated**: February 2026  
-**Total Extensions**: 2
+**Last Updated**: February 2026
+**Total Extensions**: 3
