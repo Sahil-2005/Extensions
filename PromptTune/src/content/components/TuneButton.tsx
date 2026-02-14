@@ -37,7 +37,7 @@ export const TuneButton: React.FC<TuneButtonProps> = ({ inputElement, site }) =>
         textarea.dispatchEvent(new Event('change', { bubbles: true }));
     } else {
         // ContentEditable
-        inputElement.textContent = newValue; 
+        inputElement.innerText = newValue; 
         // Some sites need focus/blur or specific input events
         inputElement.focus();
         inputElement.dispatchEvent(new Event('input', { bubbles: true }));
