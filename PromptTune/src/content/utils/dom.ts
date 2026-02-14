@@ -36,7 +36,11 @@ export const getInputContainer = (inputField: HTMLElement, site: SiteType): HTML
         return inputField.closest('.fieldset') || inputField.parentElement?.parentElement || null;
     }
     if (site === 'gemini') {
-        return inputField.parentElement?.parentElement || null;
+        // Try to find the main input wrapper
+        // The text area is usually inside a scrollable div, inside the main logic div
+        // We look for a parent that has a robust structure or just go up 3 levels to be safe
+        // effectively locating the 'input-area'
+        return inputField.closest('.input-area') || inputField.parentElement?.parentElement || null;
     }
     return inputField.parentElement || null;
 }

@@ -27,7 +27,7 @@ const injectButton = () => {
   container.classList.add(INJECT_CLASS);
 
   const host = document.createElement('div');
-  host.className = 'prompt-tune-host';
+  host.className = 'prompt-tune-host ' + site;
   
   // Ensure container has relative positioning for absolute child
   const style = window.getComputedStyle(container);
@@ -50,12 +50,23 @@ const injectButton = () => {
     :host {
         position: absolute;
         bottom: 12px;
-        right: 48px; /* Default offset to avoid send button */
+        right: 48px; 
         z-index: 999;
         font-family: sans-serif;
     }
-    /* Specific adjustments per site based on 'site' prop if needed, 
-       but we can handle that via React props or JS logic */
+    :host(.chatgpt) {
+        bottom: 14px;
+        right: 50px;
+    }
+    :host(.claude) {
+        bottom: 10px;
+        right: 60px;
+    }
+    :host(.gemini) {
+        /* Gemini has a toolbar at the bottom. We want to be inside it, to the left of the mic/send buttons */
+        bottom: 16px;
+        right: 130px; /* Shift left to avoid the "Mic" and "Send" buttons */
+    }
   `;
   shadow.appendChild(customStyle);
   
