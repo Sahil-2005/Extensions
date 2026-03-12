@@ -4,6 +4,7 @@ import { Bookmark, MapPin, Trash2, MessageCircle } from 'lucide-react';
 interface Checkpoint {
   id: string;
   title: string;
+  description?: string;
   elementSelector?: string;
   scrollTop?: number;
   timestamp: number;
@@ -35,7 +36,7 @@ function App() {
     // Listen for storage changes in case content script adds one while popup is open
     const handleStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }) => {
       if (chatId && changes[`chatpoints_${chatId}`]) {
-        setCheckpoints(changes[`chatpoints_${chatId}`].newValue || []);
+        setCheckpoints((changes[`chatpoints_${chatId}`].newValue as Checkpoint[]) || []);
       }
     };
     chrome.storage.onChanged.addListener(handleStorageChange);
@@ -106,7 +107,7 @@ function App() {
                 <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 
                 <div className="flex justify-between items-start gap-2">
-                  <span className="font-medium text-sm text-slate-200 group-hover:text-indigo-300 transition-colors line-clamp-2 leading-relaxed">
+                  <span className="font-medium text-sm text-slate-200 group-hover:text-indigo-300 transition-colors line-clamp-1 leading-relaxed">
                     {cp.title}
                   </span>
                   <button 
@@ -117,6 +118,11 @@ function App() {
                     <Trash2 size={14} />
                   </button>
                 </div>
+                {cp.description && (
+                  <p className="text-[11px] text-slate-400 line-clamp-2 mt-1 italic border-l-2 border-indigo-500/20 pl-2">
+                    "{cp.description}"
+                  </p>
+                )}
                 <div className="flex items-center gap-2 mt-2 opacity-50 text-[10px] uppercase font-semibold tracking-wider">
                   <span>{new Date(cp.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                 </div>

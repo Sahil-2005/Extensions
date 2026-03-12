@@ -4,6 +4,7 @@
   const isGemini = window.location.hostname.includes('gemini.google.com');
 
   let currentChatId: string | null = null;
+  let selectionTooltip: HTMLButtonElement | null = null;
 
   function getChatIdFromURL(): string | null {
     const url = window.location.href;
@@ -23,14 +24,15 @@
     }
   }
 
-  function saveCheckpoint(title: string, scrollTop?: number) {
+  function saveCheckpoint(title: string, description?: string, scrollTop?: number) {
     if (!currentChatId) return;
 
     const id = Date.now().toString();
     const checkpoint = {
         id,
         title,
-        scrollTop: scrollTop || window.scrollY || document.documentElement.scrollTop,
+        description,
+        scrollTop: scrollTop || getScrollContainer()?.scrollTop || window.scrollY,
         timestamp: Date.now()
     };
 
@@ -39,63 +41,112 @@
         const existing = result[storageKey] || [];
         existing.push(checkpoint);
         chrome.storage.local.set({ [storageKey]: existing }, () => {
-            // Optional: Show a brief "Saved!" toast logic here
             console.log("Checkpoint saved:", checkpoint);
         });
     });
   }
 
-  function createCheckpointButton(): HTMLButtonElement {
+  function getScrollContainer(): HTMLElement | null {
+    if (isChatGPT) {
+        return document.querySelector('main > div:first-child > div > div > div');
+    } else if (isGemini) {
+        const elements = document.querySelectorAll('*');
+        let scrollArea: HTMLElement | null = null;
+        let maxScroll = 0;
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i] as HTMLElement;
+            if (el.scrollHeight > maxScroll && el.clientHeight > 0 && el.scrollHeight > el.clientHeight) {
+                maxScroll = el.scrollHeight;
+                scrollArea = el;
+            }
+        }
+        return scrollArea;
+    }
+    return null;
+  }
+
+  function createCheckpointButton(isFloating: boolean = false): HTMLButtonElement {
     const btn = document.createElement('button');
     btn.className = 'chatpoint-add-btn';
     
-    // SVG for a bookmark/pin icon
-    btn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-      </svg>
-      <span>Checkpoint</span>
-    `;
+    const icon = isFloating ? 
+      `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>` :
+      `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
 
-    // Modern inline styling for the button
-    Object.assign(btn.style, {
+    btn.innerHTML = `${icon}<span>${isFloating ? 'Add' : 'Checkpoint'}</span>`;
+
+    const baseStyle = {
       display: 'flex',
       alignItems: 'center',
       gap: '6px',
-      padding: '6px 10px',
-      backgroundColor: 'rgba(99, 102, 241, 0.1)', // indigo-500/10
-      color: '#818cf8', // indigo-400
-      border: '1px solid rgba(99, 102, 241, 0.3)',
-      borderRadius: '8px',
-      fontSize: '12px',
-      fontWeight: '500',
+      padding: isFloating ? '4px 8px' : '6px 10px',
+      backgroundColor: '#4f46e5',
+      color: '#fff',
+      border: 'none',
+      borderRadius: isFloating ? '6px' : '8px',
+      fontSize: isFloating ? '11px' : '12px',
+      fontWeight: '600',
       cursor: 'pointer',
-      backdropFilter: 'blur(4px)',
-      transition: 'all 0.2s ease',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
-    });
+      boxShadow: '0 4px 12px rgba(79, 70, 229, 0.4)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      zIndex: '10000'
+    };
+
+    Object.assign(btn.style, baseStyle);
 
     btn.onmouseover = () => {
-        btn.style.backgroundColor = 'rgba(99, 102, 241, 0.2)';
-        btn.style.boxShadow = '0 0 8px rgba(99, 102, 241, 0.3)';
+        btn.style.transform = 'translateY(-1px) scale(1.02)';
+        btn.style.backgroundColor = '#4338ca';
+        btn.style.boxShadow = '0 6px 16px rgba(79, 70, 229, 0.5)';
     };
     btn.onmouseout = () => {
-        btn.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
-        btn.style.boxShadow = 'none';
+        btn.style.transform = 'translateY(0) scale(1)';
+        btn.style.backgroundColor = '#4f46e5';
+        btn.style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.4)';
     };
 
     return btn;
   }
 
-  function injectIntoChatGPT() {
-    // Strategy for ChatGPT: We can observe messages being added or 
-    // we can create a nice floating action button at the bottom right
-    injectFloatingButton();
+  function handleSelection() {
+    const selection = window.getSelection();
+    const selectedText = selection?.toString().trim();
+
+    if (selectedText && selectedText.length > 0) {
+      if (!selectionTooltip) {
+        selectionTooltip = createCheckpointButton(true);
+        selectionTooltip.id = 'chatpoint-selection-tooltip';
+        selectionTooltip.style.position = 'absolute';
+        document.body.appendChild(selectionTooltip);
+      }
+
+      const range = selection?.getRangeAt(0);
+      const rect = range?.getBoundingClientRect();
+
+      if (rect) {
+        selectionTooltip.style.display = 'flex';
+        selectionTooltip.style.left = `${rect.left + window.scrollX + (rect.width / 2) - 30}px`;
+        selectionTooltip.style.top = `${rect.top + window.scrollY - 35}px`;
+
+        selectionTooltip.onclick = (e) => {
+          e.stopPropagation();
+          const title = prompt("Enter checkpoint title:", "Highlight");
+          if (title) {
+            saveCheckpoint(title, selectedText);
+          }
+          hideTooltip();
+        };
+      }
+    } else {
+      hideTooltip();
+    }
   }
 
-  function injectIntoGemini() {
-    // Strategy for Gemini: the scrollable container is different. 
-    injectFloatingButton();
+  function hideTooltip() {
+    if (selectionTooltip) {
+      selectionTooltip.style.display = 'none';
+    }
   }
 
   function injectFloatingButton() {
@@ -118,34 +169,11 @@
      const btn = createCheckpointButton();
      btn.style.padding = '10px 14px';
      btn.style.borderRadius = '9999px';
-     btn.style.backgroundColor = '#4f46e5'; // solid indigo-600
-     btn.style.color = '#fff';
-     btn.style.boxShadow = '0 4px 14px 0 rgba(79, 70, 229, 0.39)';
-
-     btn.onmouseover = () => {
-         btn.style.transform = 'translateY(-2px)';
-         btn.style.boxShadow = '0 6px 20px rgba(79, 70, 229, 0.5)';
-     };
-     btn.onmouseout = () => {
-         btn.style.transform = 'translateY(0)';
-         btn.style.boxShadow = '0 4px 14px 0 rgba(79, 70, 229, 0.39)';
-     };
 
      btn.onclick = () => {
          const title = prompt("Enter a brief name for this checkpoint:");
          if (title) {
-            // Determine scroll container
-            let scrollTop = window.scrollY;
-            if (isChatGPT) {
-                // Find main scroll container in ChatGPT
-                const scrollArea = document.querySelector('main > div:first-child > div > div > div');
-                if (scrollArea) scrollTop = scrollArea.scrollTop;
-            } else if (isGemini) {
-                // Find main scroll container in Gemini
-                const scrollArea = Object.values(document.querySelectorAll('div, main')).find(el => el.scrollHeight > window.innerHeight && el.clientHeight > 0);
-                if (scrollArea) scrollTop = scrollArea.scrollTop;
-            }
-            saveCheckpoint(title, scrollTop);
+            saveCheckpoint(title);
          }
      };
 
@@ -159,35 +187,44 @@
          return;
      }
      
-     if (isChatGPT) injectIntoChatGPT();
-     else if (isGemini) injectIntoGemini();
+     injectFloatingButton();
   }
 
   // Set up listeners for messages from the popup
   chrome.runtime.onMessage.addListener((request: any, _sender: chrome.runtime.MessageSender, _sendResponse: (response?: any) => void) => {
     if (request.action === 'JUMP_TO_CHECKPOINT') {
       const { checkpoint } = request;
-      if (checkpoint && checkpoint.scrollTop !== undefined) {
-         if (isChatGPT) {
-             const scrollArea = document.querySelector('main > div:first-child > div > div > div');
-             if (scrollArea) {
-                 scrollArea.scrollTo({ top: checkpoint.scrollTop, behavior: 'smooth' });
-             } else {
-                 window.scrollTo({ top: checkpoint.scrollTop, behavior: 'smooth' });
-             }
-         } else if (isGemini) {
-             // Find the element that's actually scrollable
-             const elements = document.querySelectorAll('*');
-             let scrollArea = null;
-             let maxScroll = 0;
-             for (let i = 0; i < elements.length; i++) {
-                 if (elements[i].scrollHeight > maxScroll && elements[i].clientHeight > 0 && elements[i].scrollHeight > elements[i].clientHeight) {
-                     maxScroll = elements[i].scrollHeight;
-                     scrollArea = elements[i];
-                 }
-             }
-             if (scrollArea) {
-                 scrollArea.scrollTo({ top: checkpoint.scrollTop, behavior: 'smooth' });
+      const container = getScrollContainer();
+      
+      if (checkpoint) {
+        // Try to find text first if description exists
+        if (checkpoint.description) {
+            const findTextAndScroll = () => {
+                const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+                let node;
+                while (node = walker.nextNode()) {
+                    if (node.textContent?.includes(checkpoint.description)) {
+                        (node.parentElement as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Add temporary highlight
+                        const parent = node.parentElement as HTMLElement;
+                        const originalBg = parent.style.backgroundColor;
+                        parent.style.backgroundColor = 'rgba(79, 70, 229, 0.2)';
+                        setTimeout(() => {
+                            parent.style.backgroundColor = originalBg;
+                        }, 2000);
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            if (findTextAndScroll()) return;
+        }
+
+        // Fallback to scrollTop
+        if (checkpoint.scrollTop !== undefined) {
+             if (container) {
+                 container.scrollTo({ top: checkpoint.scrollTop, behavior: 'smooth' });
              } else {
                  window.scrollTo({ top: checkpoint.scrollTop, behavior: 'smooth' });
              }
@@ -195,6 +232,10 @@
       }
     }
   });
+
+  // Track selection
+  document.addEventListener('mouseup', handleSelection);
+  document.addEventListener('keyup', handleSelection);
 
   // Track URL changes (SPAs like ChatGPT/Gemini push state)
   let lastUrl = window.location.href;
