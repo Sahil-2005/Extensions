@@ -17,7 +17,17 @@ function App() {
   const [editValue, setEditValue] = useState("");
 
   useEffect(() => {
-    // Determine the current chat ID
+    // Check for chatId in URL params (when running in iframe)
+    const params = new URLSearchParams(window.location.search);
+    const paramChatId = params.get('chatId');
+
+    if (paramChatId) {
+      setChatId(paramChatId);
+      loadCheckpoints(paramChatId);
+      return;
+    }
+
+    // Fallback to determining from current tab (when running as native popup)
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const url = tabs[0]?.url;
       if (url) {
@@ -48,6 +58,29 @@ function App() {
   const loadCheckpoints = (id: string) => {
     chrome.storage.local.get([`chatpoints_${id}`], (result: { [key: string]: Checkpoint[] }) => {
       setCheckpoints(result[`chatpoints_${id}`] || []);
+    });
+  };
+
+  const addCheckpoint = () => {
+    if (!chatId) return;
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs: chrome.tabs.Tab[]) => {
+      const tabId = tabs[0]?.id;
+      if (tabId) {
+        chrome.tabs.sendMessage(tabId, { action: 'GET_SCROLL_INFO' }, (response) => {
+          if (response) {
+            const id = Date.now().toString();
+            const newCp: Checkpoint = {
+              id,
+              title: `Checkpoint ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+              scrollTop: response.scrollTop,
+              timestamp: Date.now()
+            };
+            const updated = [newCp, ...checkpoints];
+            setCheckpoints(updated);
+            chrome.storage.local.set({ [`chatpoints_${chatId}`]: updated });
+          }
+        });
+      }
     });
   };
 
@@ -94,14 +127,25 @@ function App() {
       <div className="absolute bottom-[-50px] right-[-50px] w-32 h-32 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="flex items-center gap-2 mb-6 pb-4 border-b border-white/10 relative z-10">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-          <MapPin size={18} className="text-white" />
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10 relative z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <MapPin size={18} className="text-white" />
+          </div>
+          <div>
+            <h1 className="font-semibold text-lg leading-none tracking-tight">ChatPoint</h1>
+            <p className="text-xs text-slate-400 mt-1">AI Context Anchors</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-semibold text-lg leading-none tracking-tight">ChatPoint</h1>
-          <p className="text-xs text-slate-400 mt-1">AI Context Anchors</p>
-        </div>
+        {chatId && (
+          <button 
+            onClick={addCheckpoint}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
+          >
+            <Bookmark size={14} />
+            <span>Add</span>
+          </button>
+        )}
       </div>
 
       {/* Content */}

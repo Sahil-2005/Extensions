@@ -21,5 +21,11 @@
   "host_permissions": [
     "*://chatgpt.com/*",
     "*://gemini.google.com/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["index.html", "assets/*"],
+      "matches": ["*://chatgpt.com/*", "*://gemini.google.com/*"]
+    }
   ]
 }

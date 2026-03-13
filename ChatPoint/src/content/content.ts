@@ -5,6 +5,7 @@
 
   let currentChatId: string | null = null;
   let selectionTooltip: HTMLButtonElement | null = null;
+  let popupFrame: HTMLIFrameElement | null = null;
 
   function getChatIdFromURL(): string | null {
     const url = window.location.href;
@@ -20,6 +21,11 @@
     const newChatId = getChatIdFromURL();
     if (newChatId !== currentChatId) {
       currentChatId = newChatId;
+      // Close popup frame on chat change to avoid stale state
+      if (popupFrame) {
+        popupFrame.remove();
+        popupFrame = null;
+      }
       initCheckpointsUI();
     }
   }
@@ -143,6 +149,8 @@
   }
 
   function showNamingModal(description: string | undefined, onSave: (title: string) => void) {
+    // This is now ONLY for selection checkpoints
+    // ... code remains same as before ...
     // Remove if already exists
     document.getElementById('chatpoint-naming-modal-overlay')?.remove();
 
@@ -299,6 +307,46 @@
     }
   }
 
+  function togglePopupFrame() {
+    if (popupFrame) {
+      popupFrame.style.transform = 'translateX(100%)';
+      popupFrame.style.opacity = '0';
+      setTimeout(() => {
+        popupFrame?.remove();
+        popupFrame = null;
+      }, 300);
+      return;
+    }
+
+    if (!currentChatId) return;
+
+    popupFrame = document.createElement('iframe');
+    popupFrame.src = chrome.runtime.getURL(`index.html?chatId=${currentChatId}`);
+    
+    Object.assign(popupFrame.style, {
+      position: 'fixed',
+      top: '20px',
+      right: '20px',
+      width: '350px',
+      height: 'calc(100vh - 120px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRadius: '16px',
+      zIndex: '2147483647',
+      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+      backgroundColor: '#020617',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transform: 'translateX(100%)',
+      opacity: '0'
+    });
+
+    document.body.appendChild(popupFrame);
+    
+    // Force reflow for transition
+    popupFrame.offsetHeight;
+    popupFrame.style.transform = 'translateX(0)';
+    popupFrame.style.opacity = '1';
+  }
+
   function injectFloatingButton() {
      // Remove existing if any
      document.getElementById('chatpoint-floating-widget')?.remove();
@@ -308,7 +356,7 @@
      
      Object.assign(widget.style, {
         position: 'fixed',
-        bottom: '80px',
+        bottom: '30px',
         right: '25px',
         zIndex: '9999',
         display: 'flex',
@@ -317,13 +365,12 @@
      });
 
      const btn = createCheckpointButton();
-     btn.style.padding = '10px 14px';
+     btn.style.padding = '12px 18px';
      btn.style.borderRadius = '9999px';
+     btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg><span>Checkpoints</span>`;
 
      btn.onclick = () => {
-         showNamingModal(undefined, (title) => {
-            saveCheckpoint(title);
-         });
+         togglePopupFrame();
      };
 
      widget.appendChild(btn);
@@ -340,7 +387,15 @@
   }
 
   // Set up listeners for messages from the popup
-  chrome.runtime.onMessage.addListener((request: any, _sender: chrome.runtime.MessageSender, _sendResponse: (response?: any) => void) => {
+  chrome.runtime.onMessage.addListener((request: any, _sender: chrome.runtime.MessageSender, sendResponse: (response?: any) => void) => {
+    if (request.action === 'GET_SCROLL_INFO') {
+      const container = getScrollContainer();
+      sendResponse({
+        scrollTop: container ? container.scrollTop : window.scrollY
+      });
+      return true; // Keep channel open for async response
+    }
+
     if (request.action === 'JUMP_TO_CHECKPOINT') {
       const { checkpoint } = request;
       const container = getScrollContainer();
