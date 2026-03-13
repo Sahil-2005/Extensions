@@ -13,6 +13,8 @@ interface Checkpoint {
 function App() {
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [chatId, setChatId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   useEffect(() => {
     // Determine the current chat ID
@@ -65,6 +67,26 @@ function App() {
     chrome.storage.local.set({ [`chatpoints_${chatId}`]: updated });
   };
 
+  const startEditing = (cp: Checkpoint) => {
+    setEditingId(cp.id);
+    setEditValue(cp.title);
+  };
+
+  const saveEdit = () => {
+    if (!chatId || !editingId) return;
+    const updated = checkpoints.map((cp) => 
+      cp.id === editingId ? { ...cp, title: editValue } : cp
+    );
+    setCheckpoints(updated);
+    chrome.storage.local.set({ [`chatpoints_${chatId}`]: updated });
+    setEditingId(null);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue("");
+  };
+
   return (
     <div className="w-80 min-h-[400px] bg-slate-950 text-slate-200 font-sans p-4 flex flex-col relative overflow-hidden">
       {/* Background Glow */}
@@ -100,25 +122,69 @@ function App() {
             {checkpoints.map((cp) => (
               <div 
                 key={cp.id}
-                className="group flex flex-col p-3 rounded-xl bg-white/5 border border-white/5 hover:border-indigo-500/30 hover:bg-white/10 transition-all duration-300 backdrop-blur-md cursor-pointer relative overflow-hidden"
-                onClick={() => jumpToCheckpoint(cp)}
+                className={`group flex flex-col p-3 rounded-xl bg-white/5 border transition-all duration-300 backdrop-blur-md relative overflow-hidden ${
+                  editingId === cp.id ? 'border-indigo-500 bg-white/10' : 'border-white/5 hover:border-indigo-500/30 hover:bg-white/10 cursor-pointer'
+                }`}
+                onClick={() => editingId !== cp.id && jumpToCheckpoint(cp)}
               >
                 {/* Accent line on hover */}
                 <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 
                 <div className="flex justify-between items-start gap-2">
-                  <span className="font-medium text-sm text-slate-200 group-hover:text-indigo-300 transition-colors line-clamp-1 leading-relaxed">
-                    {cp.title}
-                  </span>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); removeCheckpoint(cp.id); }}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-all shrink-0"
-                    title="Remove Checkpoint"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {editingId === cp.id ? (
+                    <div className="flex-1 flex flex-col gap-2">
+                      <input
+                        autoFocus
+                        type="text"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveEdit();
+                          if (e.key === 'Escape') cancelEdit();
+                        }}
+                        className="w-full bg-slate-900 border border-indigo-500/50 rounded px-2 py-1 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={saveEdit}
+                          className="text-[10px] bg-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded font-bold text-white transition-colors"
+                        >
+                          SAVE
+                        </button>
+                        <button 
+                          onClick={cancelEdit}
+                          className="text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded font-bold text-slate-300 transition-colors"
+                        >
+                          CANCEL
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="font-medium text-sm text-slate-200 group-hover:text-indigo-300 transition-colors line-clamp-1 leading-relaxed">
+                        {cp.title}
+                      </span>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); startEditing(cp); }}
+                          className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-400/10 rounded-md transition-all shrink-0"
+                          title="Edit Name"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); removeCheckpoint(e.currentTarget.id); }}
+                          id={cp.id}
+                          className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-all shrink-0"
+                          title="Remove Checkpoint"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
-                {cp.description && (
+                {cp.description && !editingId && (
                   <p className="text-[11px] text-slate-400 line-clamp-2 mt-1 italic border-l-2 border-indigo-500/20 pl-2">
                     "{cp.description}"
                   </p>

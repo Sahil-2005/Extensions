@@ -131,16 +131,166 @@
 
         selectionTooltip.onclick = (e) => {
           e.stopPropagation();
-          const title = prompt("Enter checkpoint title:", "Highlight");
-          if (title) {
+          showNamingModal(selectedText, (title) => {
             saveCheckpoint(title, selectedText);
-          }
+          });
           hideTooltip();
         };
       }
     } else {
       hideTooltip();
     }
+  }
+
+  function showNamingModal(description: string | undefined, onSave: (title: string) => void) {
+    // Remove if already exists
+    document.getElementById('chatpoint-naming-modal-overlay')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'chatpoint-naming-modal-overlay';
+    Object.assign(overlay.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: '20000',
+      opacity: '0',
+      transition: 'opacity 0.2s ease'
+    });
+
+    const modal = document.createElement('div');
+    modal.id = 'chatpoint-naming-modal';
+    Object.assign(modal.style, {
+      width: '320px',
+      backgroundColor: '#0f172a',
+      borderRadius: '16px',
+      padding: '20px',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      color: '#f8fafc',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    });
+
+    const title = document.createElement('h3');
+    title.textContent = 'Name this Checkpoint';
+    Object.assign(title.style, {
+      margin: '0',
+      fontSize: '18px',
+      fontWeight: '600',
+      background: 'linear-gradient(to bottom right, #818cf8, #c084fc)',
+      webkitBackgroundClip: 'text',
+      webkitTextFillColor: 'transparent'
+    });
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'e.g. Key Concept, Code Block...';
+    Object.assign(input.style, {
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRadius: '8px',
+      padding: '10px 12px',
+      color: '#fff',
+      fontSize: '14px',
+      outline: 'none',
+      width: '100%',
+      boxSizing: 'border-box'
+    });
+
+    if (description) {
+        const desc = document.createElement('p');
+        desc.textContent = `"${description.length > 60 ? description.substring(0, 60) + '...' : description}"`;
+        Object.assign(desc.style, {
+            fontSize: '12px',
+            color: '#94a3b8',
+            margin: '0',
+            fontStyle: 'italic',
+            borderLeft: '2px solid rgba(129, 140, 248, 0.3)',
+            paddingLeft: '8px'
+        });
+        modal.appendChild(desc);
+    }
+
+    const actions = document.createElement('div');
+    Object.assign(actions.style, {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      gap: '10px',
+      marginTop: '8px'
+    });
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    Object.assign(cancelBtn.style, {
+      padding: '8px 16px',
+      borderRadius: '8px',
+      backgroundColor: 'transparent',
+      color: '#94a3b8',
+      border: 'none',
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: '500'
+    });
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save';
+    Object.assign(saveBtn.style, {
+      padding: '8px 20px',
+      borderRadius: '8px',
+      backgroundColor: '#4f46e5',
+      color: '#fff',
+      border: 'none',
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: '600',
+      boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.4)'
+    });
+
+    actions.appendChild(cancelBtn);
+    actions.appendChild(saveBtn);
+
+    modal.appendChild(title);
+    modal.appendChild(input);
+    modal.appendChild(actions);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Fade in
+    setTimeout(() => overlay.style.opacity = '1', 10);
+    input.focus();
+
+    const closeModal = () => {
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 200);
+    };
+
+    const handleSave = () => {
+        const value = input.value.trim();
+        if (value) {
+            onSave(value);
+            closeModal();
+        } else {
+            input.style.borderColor = '#ef4444';
+        }
+    };
+
+    saveBtn.onclick = handleSave;
+
+    cancelBtn.onclick = closeModal;
+    overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+    input.onkeydown = (e) => {
+        if (e.key === 'Enter') handleSave();
+        if (e.key === 'Escape') closeModal();
+    };
   }
 
   function hideTooltip() {
@@ -171,10 +321,9 @@
      btn.style.borderRadius = '9999px';
 
      btn.onclick = () => {
-         const title = prompt("Enter a brief name for this checkpoint:");
-         if (title) {
+         showNamingModal(undefined, (title) => {
             saveCheckpoint(title);
-         }
+         });
      };
 
      widget.appendChild(btn);
