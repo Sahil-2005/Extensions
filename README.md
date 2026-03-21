@@ -41,6 +41,18 @@ A curated collection of Chrome extensions I've developed to enhance productivity
 - 🎨 Native UI integration (Shadow DOM)
 
 [View Details →](./PromptTune/README.md)
+|
+### 📍 [ChatPoint](./ChatPoint)
+**Status**: ✅ Active Development
+**Purpose**: Mark and navigate to checkpoints in long AI conversations (anchors) to quickly jump back to specific context.
+
+**Key Features**:
+- 📍 One-click "Anchor" creation in chat
+- ⚡ Instant jump to specific messages
+- ✏️ Custom labeling for checkpoints
+- 🔒 100% local storage (privacy-first)
+
+[View Details →](./ChatPoint/README.md)
 
 ---
 
@@ -82,6 +94,10 @@ Extensions/
 │   ├── README.md
 │   ├── manifest.json
 │   └── src/
+├── ChatPoint/
+│   ├── README.md
+│   ├── manifest.json
+│   └── src/
 └── [future-extension]/
     ├── README.md
     └── ...
@@ -120,5 +136,5 @@ Each extension may have its own license. Check individual extension directories 
   <a href="mailto:gawadesahil.dev@gmail.com"><img src="https://img.shields.io/badge/CONTACT-E4405F?style=for-the-badge&logo=gmail&logoColor=white" alt="Contact" /></a>
 </div>
 
-**Last Updated**: February 2026
-**Total Extensions**: 3
+**Last Updated**: March 2026
+**Total Extensions**: 4
